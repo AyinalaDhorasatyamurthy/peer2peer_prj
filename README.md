@@ -207,6 +207,9 @@ peer2peer_prj/
 │   └── requirements.txt   # Dependencies
 └── README.md
 ```
+<img width="1913" height="882" alt="image" src="https://github.com/user-attachments/assets/d9961204-cbde-4ceb-8898-63a70c6dc086" />
+<img width="1911" height="877" alt="image" src="https://github.com/user-attachments/assets/e8d964f3-5f02-461a-b6bd-e677d7bbab37" />
+
 
 ## 🤝 Contributing
 
