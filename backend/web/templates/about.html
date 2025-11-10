@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - P2P Torrent Client</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #5a7fb8;
+            --accent: #6c8fc7;
+            --dark: #2d3748;
+            --light: #f7fafc;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-title {
+            color: var(--primary);
+            border-bottom: 2px solid var(--accent);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <!-- Back Button -->
+        <a href="/" class="btn btn-primary back-btn">
+            <i class="fas fa-arrow-left me-2"></i>Back to Client
+        </a> 
+        
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold mb-3">About P2P Torrent Client</h1>
+            <p class="lead">A decentralized file sharing application using BitTorrent protocol</p>
+        </div>
+        
+        <!-- About BitTorrent -->
+        <div class="glass-card p-4 mb-5">
+            <h2 class="section-title mb-4">What is BitTorrent?</h2>
+            <p class="mb-4">
+                BitTorrent is a peer-to-peer (P2P) communication protocol for file sharing. Unlike traditional client-server 
+                downloads, BitTorrent allows users to download files from multiple sources simultaneously, making the 
+                process faster and more efficient, especially for large files.
+            </p>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="text-center p-3">
+                        <div class="feature-icon">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <h4>Decentralized</h4>
+                        <p>Files are distributed across multiple peers, eliminating the need for a central server.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-3">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h4>Faster Downloads</h4>
+                        <p>Download different parts of the file from multiple sources simultaneously.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-3">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4>Resilient</h4>
+                        <p>If one peer disconnects, you can continue downloading from other available peers.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- How It Works -->
+        <div class="glass-card p-4 mb-5">
+            <h2 class="section-title mb-4">How It Works</h2>
+            <ol class="list-group list-group-numbered">
+                <li class="list-group-item bg-transparent border-0">
+                    <strong>Torrent File:</strong> Contains metadata about the files to be shared and the tracker information.
+                </li>
+                <li class="list-group-item bg-transparent border-0">
+                    <strong>Tracker:</strong> Helps peers find each other in the network.
+                </li>
+                <li class="list-group-item bg-transparent border-0">
+                    <strong>Peers:</strong> Users who are downloading or uploading the file.
+                </li>
+                <li class="list-group-item bg-transparent border-0">
+                    <strong>Swarm:</strong> All peers sharing the same torrent.
+                </li>
+                <li class="list-group-item bg-transparent border-0">
+                    <strong>Seeds:</strong> Peers who have the complete file and are sharing it.
+                </li>
+                <li class="list-group-item bg-transparent border-0">
+                    <strong>Leeches:</strong> Peers who are downloading the file but haven't completed it yet.
+                </li>
+            </ol>
+        </div>
+        
+        <!-- Developer Info -->
+        <div class="glass-card p-4">
+            <h2 class="section-title mb-4">Developer Information</h2>
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3>Ayinala Dhorasatya Murthy</h3>
+                    <p class="text-muted">
+                        <i class="fas fa-id-card me-2"></i>CB.EN.U4CSE22203
+                    </p>
+                    <p>
+                        This P2P Torrent Client is developed as part of the academic project to demonstrate the 
+                        implementation of BitTorrent protocol for peer-to-peer file sharing.
+                    </p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="bg-primary bg-opacity-10 p-4 rounded-circle d-inline-block">
+                        <i class="fas fa-user-graduate" style="font-size: 3rem; color: var(--primary);"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="text-center py-4 mt-5 text-muted">
+        <p class="mb-0">© 2023 P2P Torrent Client | Developed by Ayinala Dhorasatya Murthy</p>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

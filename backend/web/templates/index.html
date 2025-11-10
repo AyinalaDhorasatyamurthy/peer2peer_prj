@@ -1,96 +1,600 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Peer2Peer Torrent Client</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌐 P2P Torrent Client</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/socket.io@4/client-dist/socket.io.min.js"></script>
     <style>
+        :root {
+            --primary: #4a6fa5;      /* Muted Blue */
+            --secondary: #5a7fb8;    /* Lighter Blue */
+            --accent: #6c8fc7;       /* Soft Blue */
+            --success: #4caf50;      /* Green */
+            --dark: #2d3748;         /* Dark Gray */
+            --darker: #1a202c;       /* Darker Gray */
+            --light: #f7fafc;        /* Light Gray */
+            --danger: #e53e3e;       /* Red */
+            --warning: #dd6b20;      /* Orange */
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
         body {
-            background-color: #f8f9fa;
-            padding: 20px;
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+            background-attachment: fixed;
+            color: #2d3748;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            overflow-x: hidden;
+            line-height: 1.6;
         }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 1rem 0;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1000;
         }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.75rem;
+            color: var(--dark);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: var(--transition);
+        }
+        
+        .navbar-brand:hover {
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+        
+        .navbar-brand i {
+            color: var(--gold);
+            font-size: 1.5em;
+            margin-right: 8px;
+        }
+        
         .card {
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--glass-shadow);
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            overflow: hidden;
         }
-        .status {
-            font-family: monospace;
-            white-space: pre-wrap;
-            min-height: 100px;
-            max-height: 400px;
-            overflow-y: auto;
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0.8;
         }
-        .peer-badge {
-            margin-right: 5px;
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .card-header {
+            background: rgba(255, 255, 255, 0.5);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+            color: var(--darker);
+            font-size: 1.1rem;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-outline-primary {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.5rem;
+            color: white;
+        }
+        .stat-content {
+            flex: 1;
+        }
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: #6c757d;
             margin-bottom: 5px;
         }
+        
+        .log-entry {
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            font-size: 0.9em;
+            background: rgba(255, 255, 255, 0.8);
+            border-left: 4px solid #e2e8f0;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .log-entry.success {
+            border-left-color: var(--success);
+            background: rgba(76, 201, 100, 0.1);
+        }
+        
+        .log-entry.error {
+            border-left-color: var(--danger);
+            background: rgba(229, 62, 62, 0.1);
+        }
+        
+        .log-entry.warning {
+            border-left-color: var(--warning);
+            background: rgba(221, 107, 32, 0.1);
+        }
+        
+        .torrent-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            margin: 0.5rem 0;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+        }
+        
+        .torrent-item:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        .torrent-item:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .torrent-info {
+            flex: 1;
+        }
+        
+        .torrent-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .torrent-meta {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+        
+        .peer-item {
+            padding: 6px 10px;
+            margin: 4px 0;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+        
+        #status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background-color: #6c757d;
+        }
+        
+        .status-connected {
+            background-color: #28a745 !important;
+        }
+        
+        .status-disconnected {
+            background-color: #dc3545 !important;
+        }
+        
+        .status-connecting {
+            background-color: #ffc107 !important;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
         .progress {
-            height: 25px;
+            height: 8px;
+            border-radius: 4px;
             margin: 10px 0;
+        }
+        
+        .progress-bar {
+            background-color: var(--primary);
+        }
+        
+        .badge {
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 12px;
+        }
+        
+        .tab-content {
+            padding: 15px 0;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary);
+            background: white;
+            border-bottom: 3px solid var(--primary);
+        }
+        
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-upload-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        /* Add keyframe animations */
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+        
+        /* Status indicator animation */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 201, 240, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 201, 240, 0); }
+        }
+        
+        .status-connected {
+            background: #4cc9f0;
+            animation: pulse 2s infinite;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="text-center mb-4">
-            <h1 class="display-4">Peer2Peer Torrent Client</h1>
-            <p class="lead">Decentralized file sharing with BitTorrent protocol</p>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <i class="fas fa-network-wired me-2"></i>P2P Torrent Client
+            </a>
+            <div class="d-flex align-items-center gap-4">
+                <a href="about.html" class="text-decoration-none text-dark">
+                    <i class="fas fa-info-circle me-1"></i> About
+                </a>
+                <div class="vr"></div>
+                <div>
+                    <span id="status-indicator" class="status-disconnected me-2"></span>
+                    <span id="connection-status">Disconnected</span>
+                </div>
+            </div>
         </div>
+    </nav>
 
-        <div class="row">
-            <div class="col-md-6">
+    <div class="container">
+        <!-- Connection Panel -->
+        <div class="row mb-4">
+            <div class="col-12">
                 <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Upload Torrent</h5>
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Connection</h5>
+                        <div>
+                            <button id="connect-btn" class="btn btn-primary me-2">
+                                <i class="fas fa-plug me-1"></i> Connect
+                            </button>
+                            <button id="register-peer-btn" class="btn btn-outline-secondary">
+                                <i class="fas fa-user-plus me-1"></i> Register as Peer
+                            </button>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <div class="mb-3">
-                            <label for="torrent-file" class="form-label">Select .torrent file</label>
-                            <input class="form-control" type="file" id="torrent-file" accept=".torrent">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tracker URL</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-server"></i></span>
+                                    <input type="text" id="tracker-url" class="form-control" value="http://192.168.56.3:5001">
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Peer ID</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                    <input type="text" id="peer-id" class="form-control" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end mb-3">
+                                <button id="copy-peer-id" class="btn btn-outline-secondary w-100" title="Copy Peer ID">
+                                    <i class="far fa-copy"></i> Copy
+                                </button>
+                            </div>
                         </div>
-                        <button id="upload-btn" class="btn btn-primary w-100">
-                            <span id="upload-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                            Start Download
-                        </button>
+                        <!-- Statistics Row -->
+                        <div class="row mt-3">
+                            <div class="col-md-6 mb-3">
+                                <div class="stat-card">
+                                    <div class="stat-icon bg-primary">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value" id="download-speed">0 KB/s</div>
+                                        <div class="stat-label">Download Speed</div>
+                                        <div class="progress mt-2" style="height: 4px;">
+                                            <div id="download-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="stat-card">
+                                    <div class="stat-icon bg-warning">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value" id="upload-speed">0 KB/s</div>
+                                        <div class="stat-label">Upload Speed</div>
+                                        <div class="progress mt-2" style="height: 4px;">
+                                            <div id="upload-bar" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Torrent List -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Available Torrents</h5>
+                        <div>
+                            <button id="refresh-torrents" class="btn btn-sm btn-outline-secondary me-2" title="Refresh">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <div class="file-upload">
+                                <button id="upload-torrent" class="btn btn-sm btn-success">
+                                    <i class="fas fa-upload me-1"></i> Upload
+                                </button>
+                                <input type="file" id="torrent-file" class="file-upload-input" accept=".torrent">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="torrents-container" style="min-height: 300px; max-height: 500px; overflow-y: auto;">
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-cloud-download-alt fa-3x mb-3"></i>
+                                <p>No torrents available. Upload a .torrent file to get started.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card mt-4">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="mb-0">Connected Peers</h5>
+                <!-- Logs -->
+                <div class="card">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs" id="logs-tab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="all-logs-tab" data-bs-toggle="tab" data-bs-target="#all-logs" type="button">All Logs</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="errors-tab" data-bs-toggle="tab" data-bs-target="#errors" type="button">Errors</button>
+                            </li>
+                        </ul>
                     </div>
-                    <div class="card-body" id="peers-container">
-                        <p class="text-muted" id="no-peers">No peers connected yet</p>
-                        <div id="peers-list"></div>
+                    <div class="card-body p-0">
+                        <div class="tab-content p-3" id="logs-content" style="max-height: 300px; overflow-y: auto;">
+                            <div class="tab-pane fade show active" id="all-logs" role="tabpanel">
+                                <div id="logs" class="logs-container"></div>
+                            </div>
+                            <div class="tab-pane fade" id="errors" role="tabpanel">
+                                <div id="error-logs" class="logs-container"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-6">
-                <div class="card h-100">
-                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Download Status</h5>
-                        <div>
-                            <span id="download-speed" class="badge bg-success">0 KB/s</span>
-                            <span id="upload-speed" class="badge bg-primary ms-1">0 KB/s</span>
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Peers -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Connected Peers</h5>
+                        <button id="refresh-peers" class="btn btn-sm btn-outline-secondary" title="Refresh">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="peers-container" style="min-height: 200px; max-height: 300px; overflow-y: auto;">
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-users fa-3x mb-3"></i>
+                                <p>No peers connected</p>
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Statistics</h5>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
                             <div class="d-flex justify-content-between mb-1">
-                                <span>Download Progress</span>
-                                <span id="progress-text">0%</span>
+                                <span>Download Speed</span>
+                                <span id="download-speed">0 KB/s</span>
                             </div>
                             <div class="progress">
-                                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
-                                     role="progressbar" style="width: 0%"></div>
+                                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
                             </div>
                         </div>
-                        <div class="status card p-3 bg-light" id="status">
-                            Ready to download torrents...
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Upload Speed</span>
+                                <span id="upload-speed">0 KB/s</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div class="text-center">
+                                <div class="h4 mb-0" id="active-torrents">0</div>
+                                <small class="text-muted">Active</small>
+                            </div>
+                            <div class="text-center">
+                                <div class="h4 mb-0" id="total-peers">0</div>
+                                <small class="text-muted">Peers</small>
+                            </div>
+                            <div class="text-center">
+                                <div class="h4 mb-0" id="total-torrents">0</div>
+                                <small class="text-muted">Torrents</small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -98,7 +602,710 @@
         </div>
     </div>
 
+    <!-- Debug Panel -->
+    <div class="debug-panel position-fixed bottom-0 end-0 m-3">
+        <button class="btn btn-sm btn-warning" onclick="toggleDebugPanel()">
+            <i class="fas fa-bug me-1"></i> Debug
+        </button>
+        <div id="debugPanel" class="card d-none" style="width: 300px; max-height: 400px; overflow-y: auto;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Debug Information</h6>
+                <button type="button" class="btn-close" onclick="toggleDebugPanel()"></button>
+            </div>
+            <div class="card-body p-2">
+                <div class="mb-2">
+                    <small class="text-muted d-block">Connection Status:</small>
+                    <span id="debugConnectionStatus" class="badge bg-secondary">Disconnected</span>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted d-block">Peer ID:</small>
+                    <code id="debugPeerId" class="small">Not connected</code>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted d-block">Last Event:</small>
+                    <code id="debugLastEvent" class="small">None</code>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted d-block">Last Error:</small>
+                    <code id="debugLastError" class="small text-danger">None</code>
+                </div>
+                <div class="mt-3">
+                    <button class="btn btn-sm btn-outline-secondary w-100" onclick="clearLogs()">
+                        <i class="fas fa-trash me-1"></i> Clear Logs
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    
+    <script>
+        // Configuration
+        const config = {
+            trackerUrl: 'http://192.168.56.3:5001',
+            reconnectAttempts: 10,
+            reconnectDelay: 2000
+        };
+
+        // DOM Elements
+        const elements = {
+            // Connection
+            connectBtn: document.getElementById('connect-btn'),
+            registerPeerBtn: document.getElementById('register-peer-btn'),
+            statusIndicator: document.getElementById('status-indicator'),
+            connectionStatus: document.getElementById('connection-status'),
+            trackerUrlInput: document.getElementById('tracker-url'),
+            peerIdInput: document.getElementById('peer-id'),
+            copyPeerIdBtn: document.getElementById('copy-peer-id'),
+            
+            // Torrents
+            refreshTorrentsBtn: document.getElementById('refresh-torrents'),
+            uploadTorrentBtn: document.getElementById('upload-torrent'),
+            torrentFileInput: document.getElementById('torrent-file'),
+            torrentsContainer: document.getElementById('torrents-container'),
+            
+            // Peers
+            refreshPeersBtn: document.getElementById('refresh-peers'),
+            peersContainer: document.getElementById('peers-container'),
+            
+            // Logs
+            logsContainer: document.getElementById('logs'),
+            errorLogsContainer: document.getElementById('error-logs'),
+            
+            // Stats
+            downloadSpeed: document.getElementById('download-speed'),
+            uploadSpeed: document.getElementById('upload-speed'),
+            activeTorrents: document.getElementById('active-torrents'),
+            totalPeers: document.getElementById('total-peers'),
+            totalTorrents: document.getElementById('total-torrents')
+        };
+
+        // State
+        let socket = null;
+        const peerId = generatePeerId();
+        let currentTorrents = {};
+        let isConnected = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set peer ID
+            elements.peerIdInput.value = peerId;
+            
+            // Event listeners
+            setupEventListeners();
+            
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Initial log
+            log('🌐 P2P Torrent Client initialized', 'info');
+            log(`Your Peer ID: ${peerId}`, 'info');
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Connection
+            elements.connectBtn.addEventListener('click', toggleConnection);
+            elements.registerPeerBtn.addEventListener('click', registerAsPeer);
+            elements.copyPeerIdBtn.addEventListener('click', copyPeerId);
+            
+            // Torrents
+            elements.refreshTorrentsBtn.addEventListener('click', getAllTorrents);
+            elements.uploadTorrentBtn.addEventListener('click', () => elements.torrentFileInput.click());
+            elements.torrentFileInput.addEventListener('change', handleFileUpload);
+            
+            // Peers
+            elements.refreshPeersBtn.addEventListener('click', getPeers);
+        }
+
+        // Generate a random peer ID
+        function generatePeerId() {
+            return '-TR3000-' + Math.random().toString(36).substring(2, 12);
+        }
+
+        // Toggle connection to tracker
+        function toggleConnection() {
+            if (isConnected) {
+                disconnectFromTracker();
+            } else {
+                connectToTracker();
+            }
+        }
+
+        // Connect to tracker
+        function connectToTracker() {
+            if (socket) {
+                socket.disconnect();
+            }
+
+            updateConnectionStatus('Connecting...', 'status-connecting');
+            
+            // Get tracker URL from input
+            config.trackerUrl = elements.trackerUrlInput.value.trim();
+            
+            // Initialize socket with configuration
+            socket = io(config.trackerUrl, {
+                reconnection: true,
+                reconnectionAttempts: config.reconnectAttempts,
+                reconnectionDelay: config.reconnectDelay,
+                reconnectionDelayMax: 10000,
+                timeout: 5000,
+                transports: ['websocket', 'polling'],
+                autoConnect: true,
+                forceNew: true,
+                withCredentials: false,
+                extraHeaders: {
+                    'X-Peer-ID': peerId,
+                    'X-Client-Type': 'browser'
+                }
+            });
+
+            // Socket event handlers
+            socket.on('connect', onSocketConnect);
+            socket.on('disconnect', onSocketDisconnect);
+            socket.on('connect_error', onSocketError);
+            socket.on('server_message', onServerMessage);
+            socket.on('peers_updated', onPeersUpdated);
+            socket.on('torrent_peers', onTorrentPeers);
+            socket.on('torrent_added', onTorrentAdded);
+            socket.on('torrents_list', onTorrentsList);
+            socket.on('swarm_updated', onSwarmUpdated);
+        }
+
+        // Disconnect from tracker
+        function disconnectFromTracker() {
+            if (socket) {
+                socket.disconnect();
+                updateConnectionStatus('Disconnected', 'status-disconnected');
+                isConnected = false;
+                updateUI();
+                log('Disconnected from tracker', 'info');
+            }
+        }
+
+        // Update connection status UI
+        function updateConnectionStatus(status, statusClass) {
+            elements.connectionStatus.textContent = status;
+            elements.statusIndicator.className = 'status-indicator ' + statusClass;
+            elements.connectBtn.innerHTML = isConnected ? 
+                '<i class="fas fa-plug me-1"></i> Disconnect' : 
+                '<i class="fas fa-plug me-1"></i> Connect';
+        }
+
+        // Socket event handlers
+        function onSocketConnect() {
+            isConnected = true;
+            updateConnectionStatus('Connected', 'status-connected');
+            log('✅ Connected to tracker successfully!', 'success');
+            updateUI();
+            
+            // Register as peer after connection
+            registerAsPeer();
+            
+            // Get initial data
+            getAllTorrents();
+            getPeers();
+        }
+
+        function onSocketDisconnect(reason) {
+            isConnected = false;
+            updateConnectionStatus('Disconnected', 'status-disconnected');
+            log(`❌ Disconnected: ${reason}`, 'error');
+            updateUI();
+            
+            // Attempt to reconnect if not manually disconnected
+            if (reason !== 'io client disconnect') {
+                log('🔄 Attempting to reconnect...', 'warning');
+                setTimeout(connectToTracker, 5000);
+            }
+        }
+
+        function onSocketError(error) {
+            log(`❌ Connection error: ${error.message}`, 'error');
+        }
+
+        function onServerMessage(data) {
+            log(`Server: ${data.message}`, data.type || 'info');
+        }
+
+        function onPeersUpdated(data) {
+            log(`📊 Peers updated: ${data.count} peers connected`, 'info');
+            displayPeers(data.peers);
+        }
+
+        function onTorrentPeers(data) {
+            const shortHash = data.info_hash.substring(0, 8);
+            log(`🔍 Found ${data.peers.length} peers for torrent ${shortHash}... (Swarm: ${data.swarm_size})`, 'success');
+            displayTorrentPeers(data.info_hash, data.peers);
+        }
+
+        function onTorrentAdded(data) {
+            const torrentName = data.name || data.filename || 'Unknown Torrent';
+            log(`🎯 New torrent available: ${torrentName}`, 'success');
+            setTimeout(getAllTorrents, 500);
+        }
+
+        function onTorrentsList(data) {
+            console.log('onTorrentsList called with data:', data);
+            if (!data) {
+                console.error('onTorrentsList received null/undefined data');
+                return;
+            }
+            if (!data.torrents) {
+                console.warn('onTorrentsList: data.torrents is null/undefined, using empty array');
+                data.torrents = [];
+            }
+            console.log(`Displaying ${data.torrents.length} torrents`);
+            displayTorrents(data.torrents);
+        }
+
+        function onSwarmUpdated(data) {
+            const action = data.action === 'joined' ? 'joined' : 'left';
+            const shortHash = data.info_hash.substring(0, 8);
+            log(`👥 Peer ${data.peer_id} ${action} swarm ${shortHash}... (Now: ${data.swarm_size} peers)`, 'info');
+        }
+
+        // Register as peer
+        function registerAsPeer() {
+            if (!socket || !socket.connected) {
+                log('❌ Not connected to tracker', 'error');
+                return;
+            }
+
+            const peerData = {
+                peer_id: peerId,
+                port: 5002,
+                client_type: 'web-p2p-client',
+                ip_address: window.location.hostname,
+                capabilities: ['p2p-sharing', 'webseed', 'ut_metadata'],
+                user_agent: navigator.userAgent,
+                host: window.location.hostname
+            };
+
+            log(`👤 Registering as P2P peer: ${peerId}...`, 'info');
+            socket.emit('register_peer', peerData);
+        }
+
+        // Get all torrents
+        function getAllTorrents() {
+            if (!socket || !socket.connected) {
+                log('❌ Not connected to tracker', 'error');
+                return;
+            }
+
+            log('🔄 Fetching torrent list...', 'info');
+            elements.torrentsContainer.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Loading torrents...</p></div>';
+            
+            // Add a timestamp to help with debugging
+            const requestTime = new Date().toISOString();
+            console.log(`[${requestTime}] Sending get_torrents request`);
+            
+            // Add a one-time event listener for debugging
+            const responseHandler = (data) => {
+                console.log(`[${new Date().toISOString()}] Received torrents_list event`, data);
+                // Remove this listener after it's called
+                socket.off('torrents_list', responseHandler);
+            };
+            socket.on('torrents_list', responseHandler);
+            
+            // Emit the request
+            socket.emit('get_torrents', (response) => {
+                console.log('get_torrents callback response:', response);
+                if (response && !response.success) {
+                    log(`❌ Error fetching torrents: ${response.error || 'Unknown error'}`, 'error');
+                }
+            });
+        }
+
+        // Display torrents
+        function displayTorrents(torrents) {
+            if (!Array.isArray(torrents) || torrents.length === 0) {
+                elements.torrentsContainer.innerHTML = `
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-cloud-download-alt fa-3x mb-3"></i>
+                        <p>No torrents available. Upload a .torrent file to get started.</p>
+                    </div>
+                `;
+                elements.totalTorrents.textContent = '0';
+                return;
+            }
+
+            elements.totalTorrents.textContent = torrents.length;
+            
+            const torrentsHtml = torrents.map(torrent => {
+                const sizeMB = (torrent.size / (1024 * 1024)).toFixed(2);
+                const shortHash = torrent.info_hash ? torrent.info_hash.substring(0, 8) + '...' : 'N/A';
+                
+                return `
+                    <div class="torrent-item">
+                        <div class="torrent-info">
+                            <div class="torrent-name">${torrent.filename || 'Unnamed Torrent'}</div>
+                            <div class="torrent-meta">
+                                <span class="me-3"><i class="fas fa-hashtag"></i> ${shortHash}</span>
+                                <span class="me-3"><i class="fas fa-database"></i> ${sizeMB} MB</span>
+                                <span><i class="far fa-clock"></i> ${new Date(torrent.uploaded_at).toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <div class="torrent-actions">
+                            <button class="btn btn-sm btn-outline-primary me-2" onclick="getTorrentPeers('${torrent.info_hash}')">
+                                <i class="fas fa-users"></i> Peers
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="announceTorrent('${torrent.info_hash}')">
+                                <i class="fas fa-bullhorn"></i> Announce
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            elements.torrentsContainer.innerHTML = torrentsHtml;
+        }
+
+        // Get peers for a torrent
+        function getTorrentPeers(infoHash) {
+            if (!socket || !socket.connected) {
+                log('❌ Not connected to tracker', 'error');
+                return;
+            }
+            
+            log(`🔍 Finding peers for torrent ${infoHash.substring(0, 8)}...`, 'info');
+            socket.emit('get_torrent_peers', { info_hash: infoHash });
+        }
+
+        // Announce torrent
+        function announceTorrent(infoHash, event = 'started') {
+            if (!socket || !socket.connected) {
+                log('❌ Not connected to tracker', 'error');
+                return false;
+            }
+
+            log(`📢 Announcing torrent ${infoHash.substring(0, 8)}... (event: ${event})`, 'warning');
+            
+            socket.emit('announce_torrent', {
+                info_hash: infoHash,
+                peer_id: peerId,
+                event: event
+            });
+
+            currentTorrents[infoHash] = true;
+            return true;
+        }
+
+        // Display peers
+        function displayPeers(peers) {
+            if (!Array.isArray(peers) || peers.length === 0) {
+                elements.peersContainer.innerHTML = `
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-users fa-3x mb-3"></i>
+                        <p>No peers connected</p>
+                    </div>
+                `;
+                elements.totalPeers.textContent = '0';
+                return;
+            }
+
+            elements.totalPeers.textContent = peers.length;
+            
+            const peersHtml = peers.map(peer => `
+                <div class="peer-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-user-circle me-2"></i>
+                        <span>${peer.peer_id || 'Unknown'}</span>
+                    </div>
+                    <span class="badge bg-primary">${peer.ip}:${peer.port}</span>
+                </div>
+            `).join('');
+
+            elements.peersContainer.innerHTML = peersHtml;
+        }
+
+        // Display torrent peers
+        function displayTorrentPeers(infoHash, peers) {
+            const shortHash = infoHash.substring(0, 8);
+            const peerCount = peers.length;
+            
+            log(`🌐 Found ${peerCount} peers for torrent ${shortHash}`, 'success');
+            
+            // In a real app, you would update the UI to show peers for this specific torrent
+            // For now, we'll just log it
+            console.log(`Peers for ${shortHash}:`, peers);
+        }
+
+        // Get peers
+        function getPeers() {
+            if (!socket || !socket.connected) {
+                log('❌ Not connected to tracker', 'error');
+                return;
+            }
+            
+            log('🔍 Requesting peer list...', 'info');
+            elements.peersContainer.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Loading peers...</p></div>';
+            
+            socket.emit('get_peers');
+        }
+
+        // Handle file upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            log(`📤 Uploading ${file.name}...`, 'info');
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData,
+                // Don't set Content-Type header, let the browser set it with the correct boundary
+                headers: {
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin'  // Include cookies if any
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} ${response.statusText}\n${errorText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    log(`✅ ${data.message}`, 'success');
+                    // Add a small delay to ensure the file is fully written
+                    setTimeout(() => {
+                        getAllTorrents();
+                    }, 500);
+                } else {
+                    throw new Error(data.error || 'Failed to upload torrent');
+                }
+            })
+            .catch(error => {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error('Upload error:', error);
+            })
+            .finally(() => {
+                // Reset file input
+                event.target.value = '';
+            });
+        }
+
+        // Copy peer ID to clipboard
+        function copyPeerId() {
+            navigator.clipboard.writeText(peerId)
+                .then(() => {
+                    const originalText = elements.copyPeerIdBtn.innerHTML;
+                    elements.copyPeerIdBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    setTimeout(() => {
+                        elements.copyPeerIdBtn.innerHTML = originalText;
+                    }, 2000);
+                })
+                .catch(err => {
+                    log(`❌ Failed to copy peer ID: ${err}`, 'error');
+                });
+        }
+
+        // Update UI based on connection state
+        function updateUI() {
+            // Update connection button
+            elements.connectBtn.innerHTML = isConnected ? 
+                '<i class="fas fa-plug me-1"></i> Disconnect' : 
+                '<i class="fas fa-plug me-1"></i> Connect';
+                
+            elements.connectBtn.classList.toggle('btn-danger', isConnected);
+            elements.connectBtn.classList.toggle('btn-primary', !isConnected);
+            
+            // Enable/disable controls
+            const controls = [
+                elements.registerPeerBtn,
+                elements.refreshTorrentsBtn,
+                elements.uploadTorrentBtn,
+                elements.refreshPeersBtn
+            ];
+            
+            controls.forEach(control => {
+                if (control) control.disabled = !isConnected;
+            });
+        }
+
+        // Log messages
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `
+                <span class="text-muted small">[${timestamp}]</span>
+                <span class="ms-2">${message}</span>
+            `;
+            
+            // Add to all logs
+            elements.logsContainer.prepend(logEntry);
+            
+            // Add to error logs if it's an error
+            if (type === 'error') {
+                const errorEntry = logEntry.cloneNode(true);
+                elements.errorLogsContainer.prepend(errorEntry);
+            }
+            
+            // Limit number of logs to prevent performance issues
+            const maxLogs = 100;
+            if (elements.logsContainer.children.length > maxLogs) {
+                elements.logsContainer.removeChild(elements.logsContainer.lastChild);
+            }
+            if (elements.errorLogsContainer.children.length > maxLogs) {
+                elements.errorLogsContainer.removeChild(elements.errorLogsContainer.lastChild);
+            }
+        }
+
+        // Debug functions
+        function toggleDebugPanel() {
+            const panel = document.getElementById('debugPanel');
+            panel.classList.toggle('d-none');
+        }
+        
+        function updateDebugInfo(event, data) {
+            if (event) {
+                document.getElementById('debugLastEvent').textContent = event;
+                if (data) {
+                    console.log(`[${event}]`, data);
+                }
+            }
+            
+            if (peerId) {
+                document.getElementById('debugPeerId').textContent = peerId.substring(0, 8) + '...';
+            }
+            
+            // Update connection status
+            const statusElement = document.getElementById('debugConnectionStatus');
+            if (socket && socket.connected) {
+                statusElement.textContent = 'Connected';
+                statusElement.className = 'badge bg-success';
+            } else {
+                statusElement.textContent = 'Disconnected';
+                statusElement.className = 'badge bg-danger';
+            }
+        }
+        
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = '';
+            log('Logs cleared', 'info');
+        }
+        
+        // Update log function to also update debug panel
+        const originalLog = window.log;
+        window.log = function(message, type = 'info') {
+            originalLog(message, type);
+            
+            // Update last error in debug panel if this is an error
+            if (type === 'error') {
+                document.getElementById('debugLastError').textContent = 
+                    message.length > 50 ? message.substring(0, 50) + '...' : message;
+            }
+            
+            // Update last event in debug panel
+            updateDebugInfo(`log:${type}`, message);
+        };
+
+        // Speed tracking variables
+        let downloadSpeeds = [];
+        let uploadSpeeds = [];
+        const MAX_SPEED_HISTORY = 10;
+        let lastDownloaded = 0;
+        let lastUploaded = 0;
+        let lastUpdateTime = Date.now();
+        
+        // Update speed indicators
+        function updateSpeedIndicators(downloaded, uploaded) {
+            const now = Date.now();
+            const timeDiff = (now - lastUpdateTime) / 1000; // in seconds
+            
+            if (timeDiff > 0) {
+                const downloadSpeed = (downloaded - lastDownloaded) / timeDiff;
+                const uploadSpeed = (uploaded - lastUploaded) / timeDiff;
+                
+                // Update speed history
+                downloadSpeeds.push(downloadSpeed);
+                uploadSpeeds.push(uploadSpeed);
+                
+                if (downloadSpeeds.length > MAX_SPEED_HISTORY) downloadSpeeds.shift();
+                if (uploadSpeeds.length > MAX_SPEED_HISTORY) uploadSpeeds.shift();
+                
+                // Calculate average speeds
+                const avgDownload = downloadSpeeds.reduce((a, b) => a + b, 0) / downloadSpeeds.length;
+                const avgUpload = uploadSpeeds.reduce((a, b) => a + b, 0) / uploadSpeeds.length;
+                
+                // Update UI
+                updateSpeedUI(avgDownload, 'download');
+                updateSpeedUI(avgUpload, 'upload');
+                
+                lastDownloaded = downloaded;
+                lastUploaded = uploaded;
+            }
+            
+            lastUpdateTime = now;
+        }
+        
+        function updateSpeedUI(speed, type) {
+            const speedKB = speed / 1024; // Convert to KB/s
+            const element = type === 'download' ? 'download' : 'upload';
+            const color = type === 'download' ? 'success' : 'info';
+            
+            // Update speed text
+            let speedText;
+            if (speedKB < 1024) {
+                speedText = `${speedKB.toFixed(1)} KB/s`;
+            } else {
+                speedText = `${(speedKB / 1024).toFixed(2)} MB/s`;
+            }
+            document.getElementById(`${element}-speed`).textContent = speedText;
+            
+            // Update progress bar (0-100% based on speed, capped at 10MB/s for visualization)
+            const maxSpeed = 10 * 1024 * 1024; // 10 MB/s
+            const percentage = Math.min((speed / maxSpeed) * 100, 100);
+            const bar = document.getElementById(`${element}-bar`);
+            bar.style.width = `${percentage}%`;
+            
+            // Update bar color based on speed
+            if (speedKB < 100) {
+                bar.className = `progress-bar bg-${color}`;
+            } else if (speedKB < 500) {
+                bar.className = `progress-bar bg-${color}`;
+            } else {
+                bar.className = `progress-bar bg-${color} progress-bar-striped progress-bar-animated`;
+            }
+        }
+        
+        // Simulate speed updates (replace with actual data from your WebSocket)
+        function simulateSpeedUpdates() {
+            // Simulate some network activity
+            const downloaded = lastDownloaded + (Math.random() * 100000);
+            const uploaded = lastUploaded + (Math.random() * 50000);
+            
+            updateSpeedIndicators(downloaded, uploaded);
+            
+            // Schedule next update
+            setTimeout(simulateSpeedUpdates, 1000);
+        }
+        
+        // Start simulation (remove this in production)
+        // simulateSpeedUpdates();
+        
+        // Expose functions to global scope for inline event handlers
+        window.getTorrentPeers = getTorrentPeers;
+        window.announceTorrent = announceTorrent;
+        window.toggleDebugPanel = toggleDebugPanel;
+        window.clearLogs = clearLogs;
+        
+        // Initialize debug info
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDebugInfo();
+        });
+    </script>
 </body>
 </html>
