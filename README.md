@@ -16,7 +16,7 @@ A decentralized file-sharing application with a centralized tracker server, buil
 - [x] Responsive UI with Bootstrap 5
 
 ## 🛠️ Tech Stack
-
+<img width="10784" height="2856" alt="image" src="https://github.com/user-attachments/assets/c1b0c40a-19bd-4829-b5e6-71eddca70c1a" />
 - **Backend**: Python 3.8+, Flask, Flask-SocketIO
 - **Frontend**: HTML5, JavaScript (ES6+), Bootstrap 5
 - **Networking**: WebSockets, HTTP Tracker Protocol
